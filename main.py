@@ -23,9 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Socket.IO server with ASGI mode
-sio = socketio.AsyncServer(async_mode='asgi')
-app.mount("/ws", socketio.ASGIApp(sio))
+# Initialize Socket.IO server with ASGI mode and CORS settings
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins=["http://localhost:3000"],  # Ensure this matches your frontend URL
+)
+app.mount("/socket.io", socketio.ASGIApp(sio))
 
 # Placeholder for user contexts
 user_contexts = {}
@@ -73,7 +76,7 @@ async def message(sid, data):
     context = user_contexts[user_id][document_id].get("context")
 
     # Initialize Langchain components with API key from environment variables
-    llm = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL_NAME"))
+    llm = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     template = """
     You are an assistant that helps with document editing.
     Document ID: {document_id}

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import io from 'socket.io-client';
 
-// Update SOCKET_URL to match the backend Socket.IO endpoint
-const SOCKET_URL = 'http://127.0.0.1:8000/ws';
+// Set SOCKET_URL to the backend's base URL
+const SOCKET_URL = 'http://127.0.0.1:8000';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -14,7 +14,10 @@ const Chat = () => {
 
   useEffect(() => {
     // Initialize Socket.IO connection
-    const newSocket = io(SOCKET_URL, { transports: ['websocket'] });
+    const newSocket = io(SOCKET_URL, {
+      transports: ['websocket'],
+      // Path is default '/socket.io', so no need to specify unless changed
+    });
 
     // Handle connection events
     newSocket.on('connect', () => {
