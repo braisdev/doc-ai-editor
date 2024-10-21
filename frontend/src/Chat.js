@@ -1,8 +1,11 @@
+// src/Chat.js
+
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import io from 'socket.io-client';
 
-const SOCKET_URL = 'http://127.0.0.1:8000/ws'; // Backend Socket.IO endpoint
+// Update SOCKET_URL to match the backend Socket.IO endpoint
+const SOCKET_URL = 'http://127.0.0.1:8000/ws';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -10,21 +13,29 @@ const Chat = () => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Initialize WebSocket connection
+    // Initialize Socket.IO connection
     const newSocket = io(SOCKET_URL, { transports: ['websocket'] });
 
     // Handle connection events
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket server');
+      setMessages((prev) => [...prev, { sender: 'System', text: 'Connected to AI Chat' }]);
     });
 
     newSocket.on('disconnect', () => {
       console.log('Disconnected from WebSocket server');
+      setMessages((prev) => [...prev, { sender: 'System', text: 'Disconnected from AI Chat' }]);
     });
 
     // Listen for responses from the server
     newSocket.on('response', (data) => {
       setMessages((prev) => [...prev, { sender: 'AI', text: data.response }]);
+    });
+
+    // Handle connection errors
+    newSocket.on('connect_error', (err) => {
+      console.error('Connection error:', err);
+      setMessages((prev) => [...prev, { sender: 'System', text: 'Connection error. Please try again.' }]);
     });
 
     setSocket(newSocket);
@@ -78,7 +89,11 @@ const Chat = () => {
           <Typography
             key={idx}
             variant="body2"
-            align={msg.sender === 'AI' ? 'left' : 'right'}
+            align={
+              msg.sender === 'AI' ? 'left' :
+              msg.sender === 'User' ? 'right' :
+              'center'
+            }
             sx={{ mb: 1 }}
           >
             <strong>{msg.sender}:</strong> {msg.text}
